@@ -1,10 +1,23 @@
 import os
-import html2text
-import markdown2
+import json
+from html2text import html2text
 os.environ['DJANGO_SETTINGS_MODULE'] = "philwadeorg.settings"
-import philwadeorg.philblog.models
+from philwadeorg.philblog.models import Post
 
 
-h = html2text.HTML2Text()
-print h.handle("<h1>Hello world!</h1>")
-print markdown2.markdown("*Hello world!*")
+posts = Post.objects.all()
+
+for post in posts:
+    file = open("posts/%s.md" % post.websafe_title, 'wr')
+    file.write(html2text(post.body))
+    file.close()
+
+    data_file = open("posts/%s.json" % post.websafe_title, 'wr')
+    data_file.write(json.JSONEncoder().encode({   "title": post.title,
+                                                "id" : post.id,
+                                                "date" : str(post.pub_date),
+                                                "websafe_title" : post.websafe_title
+                                                }))
+    data_file.close()
+
+
